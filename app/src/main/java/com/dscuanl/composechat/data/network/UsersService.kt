@@ -4,6 +4,8 @@ import com.dscuanl.composechat.data.models.User
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ktx.getValue
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 object UsersService : FirebaseService<User>("users") {
@@ -34,6 +36,9 @@ object UsersService : FirebaseService<User>("users") {
     override fun onDbDataChanged(snapshot: DataSnapshot) {
         val users = snapshot.children.map {
             it.getValue<User>()
+        }
+        GlobalScope.launch {
+            _elements.emit(users)
         }
 
     }

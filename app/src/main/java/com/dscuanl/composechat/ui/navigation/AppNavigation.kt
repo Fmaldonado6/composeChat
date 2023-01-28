@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dscuanl.composechat.ui.screens.auth.AuthScreen
 import com.dscuanl.composechat.ui.screens.auth.AuthScreenViewModel
+import com.dscuanl.composechat.ui.screens.home.HomeScreen
+import com.dscuanl.composechat.ui.screens.home.HomeViewModel
 
 @Composable
 fun AppNavigation(
@@ -26,8 +28,9 @@ fun AppNavigation(
             AuthScreen(vm = viewModel, navController = navController)
         }
 
-        composable(Screens.Home.route){
-            Text("Hola")
+        composable(Screens.Home.route) {
+            val viewModel: HomeViewModel = viewModel()
+            HomeScreen(vm = viewModel, navController = navController)
         }
 
 

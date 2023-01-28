@@ -15,7 +15,7 @@ import org.json.JSONObject
 abstract class FirebaseService<T>(
     protected val dbName: String
 ) {
-    protected val _elements = MutableStateFlow<List<T>>(mutableListOf())
+    protected val _elements = MutableStateFlow<List<T?>>(mutableListOf())
     val elements = _elements.asStateFlow()
     protected val database = Firebase.database
 
