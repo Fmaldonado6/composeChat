@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dscuanl.composechat.BuildConfig
 import com.dscuanl.composechat.ui.navigation.Screens
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -60,7 +61,7 @@ fun AuthScreen(
                 AuthUiState.Initial -> AuthInitial {
                     val gso =
                         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken("")
+                            .requestIdToken(BuildConfig.GCP_KEY)
                             .requestEmail()
                             .build()
                     val googleSignInClient = GoogleSignIn.getClient(context, gso)

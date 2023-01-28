@@ -5,6 +5,14 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+def envVariables = new Properties();
+def envVariablesFile = rootProject.file("env/env.properties")
+if (envVariablesFile.exists()) {
+    envVariablesFile.withReader('UTF-8') { reader ->
+        envVariables.load(reader)
+    }
+}
+
 android {
     namespace 'com.dscuanl.composechat'
     compileSdk 33
@@ -26,6 +34,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "GCP_KEY", envVariables.getProperty("GCP_KEY")
+        }
+
+        debug {
+            buildConfigField "String", "GCP_KEY", envVariables.getProperty("GCP_KEY")
         }
     }
     compileOptions {
@@ -61,6 +74,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-database-ktx'
     // Servicios de google
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
+    //JSON Serialization
+    implementation 'com.beust:klaxon:5.5'
+
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
