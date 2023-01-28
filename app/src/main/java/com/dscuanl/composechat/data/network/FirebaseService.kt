@@ -33,18 +33,18 @@ abstract class FirebaseService<T>(
         this.database.getReference(dbName)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    this.onDataChange(snapshot)
+                    onDbDataChanged(snapshot)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    this.onCancelled(error)
+                    onDbCancelled(error)
                 }
 
             })
     }
 
-    protected abstract fun onDataChanged(snapshot: DataSnapshot)
-    protected abstract fun onCancelled(error: DatabaseError)
+    protected abstract fun onDbDataChanged(snapshot: DataSnapshot)
+    protected abstract fun onDbCancelled(error: DatabaseError)
 
 
 }

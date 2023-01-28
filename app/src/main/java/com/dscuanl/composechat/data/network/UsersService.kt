@@ -8,7 +8,7 @@ import kotlinx.coroutines.tasks.await
 
 object UsersService : FirebaseService<User>("users") {
     override suspend fun add(element: User) {
-        val ref = database.getReference(dbName).push()
+        val ref = database.getReference(dbName).child(element.id!!)
         ref.setValue(element)
     }
 
@@ -26,16 +26,18 @@ object UsersService : FirebaseService<User>("users") {
     }
 
     override suspend fun update(element: User): User? {
-        val ref = database.getReference(dbName).child(element.id)
+        val ref = database.getReference(dbName).child(element.id!!)
         ref.setValue(element).await()
         return element
     }
 
-    override fun onDataChanged(snapshot: DataSnapshot) {
-        val users = snapshot.getValue<User>()
-        
+    override fun onDbDataChanged(snapshot: DataSnapshot) {
+        val users = snapshot.children.map {
+            it.getValue<User>()
+        }
+
     }
 
-    override fun onCancelled(error: DatabaseError) {
+    override fun onDbCancelled(error: DatabaseError) {
     }
 }

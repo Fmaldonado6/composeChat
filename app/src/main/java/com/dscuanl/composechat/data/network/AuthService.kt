@@ -28,6 +28,10 @@ object AuthService {
         return false
     }
 
+    fun signOut(){
+        firebaseAuth.signOut()
+    }
+
     fun signInWithGoogle(googleCredential: AuthCredential): Task<AuthResult> {
         return firebaseAuth.signInWithCredential(googleCredential)
     }
