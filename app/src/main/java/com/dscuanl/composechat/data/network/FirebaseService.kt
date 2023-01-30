@@ -1,7 +1,5 @@
 package com.dscuanl.composechat.data.network
 
-import com.beust.klaxon.Klaxon
-import com.beust.klaxon.token.Value
 import com.dscuanl.composechat.data.models.FirebaseEntity
 import com.dscuanl.composechat.data.models.Message
 import com.dscuanl.composechat.data.models.User

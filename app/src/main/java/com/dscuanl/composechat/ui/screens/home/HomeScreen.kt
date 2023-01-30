@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dscuanl.composechat.data.models.Message
 import com.dscuanl.composechat.data.models.User
 import com.dscuanl.composechat.ui.theme.ComposeChatTheme
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
@@ -30,6 +32,7 @@ fun HomeScreen(
     navController: NavController
 ) {
     val state by vm.uiState.collectAsState()
+    val messages by vm.messages.collectAsState(initial = mutableListOf())
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -50,7 +53,16 @@ fun HomeScreen(
                 .padding(it)
         ) {
             when (state) {
-                is HomeUiState.Loaded -> HomeLoaded(users = mutableListOf())
+                is HomeUiState.Loaded -> HomeLoaded(
+                    messages = messages,
+                    vm.messageState,
+                    onMessageTyped = { value ->
+                        vm.onMessageTyped(value = value)
+                    },
+                    onButtonClicked = {
+                        vm.sendMessage()
+                    }
+                )
                 is HomeUiState.Loading -> HomeLoading()
                 is HomeUiState.Empty -> Text("No users")
                 is HomeUiState.Error -> Button(onClick = {
@@ -77,45 +89,33 @@ fun HomeLoading() {
 
 
 @Composable
-fun HomeLoaded(users: List<User?>) {
+fun HomeLoaded(
+    messages: List<Message?>,
+    message: String,
+    onMessageTyped: (value: String) -> Unit,
+    onButtonClicked: () -> Unit
+) {
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        LazyColumn(modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth(),
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             reverseLayout = true,
 
-        ) {
+            ) {
 
-            items(users) { user ->
-                Row(modifier = Modifier.padding(5.dp)) {
-                    Text(user?.displayName ?: "Hola")
-                }
-            }
-
-            items(count = 20) {
-
-                Row(modifier = Modifier.padding(5.dp)) {
-                    Surface(
-                        color = MaterialTheme.colors.primary,
-                        shape = RoundedCornerShape(5.dp),
-
-                        ) {
-                        Column(
-                            modifier = Modifier.padding(5.dp),
-                        ) {
-                            Text(
-                                "Fernando Maldonado:",
-                                style = MaterialTheme.typography.caption
-                            )
-
-                            Text("asdasdasd $it")
-                        }
-                    }
-                }
+            itemsIndexed(messages) { index, _ ->
+                val currentMessageIndex = messages.count() - index - 1
+                val currentMessage = messages[currentMessageIndex]
+                MessageBox(
+                    modifier = Modifier.fillMaxWidth(),
+                    message = currentMessage?.message ?: "",
+                    author = currentMessage?.author ?: ""
+                )
             }
 
         }
@@ -129,9 +129,15 @@ fun HomeLoaded(users: List<User?>) {
                 modifier = Modifier.padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ChatTextInput(modifier = Modifier.weight(1f))
+                ChatTextInput(
+                    modifier = Modifier.weight(1f),
+                    text = message,
+                    onValueChange = onMessageTyped
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                ChatSendButton()
+                ChatSendButton {
+                    onButtonClicked()
+                }
             }
         }
 
@@ -139,7 +145,44 @@ fun HomeLoaded(users: List<User?>) {
 }
 
 @Composable
-fun ChatSendButton(modifier: Modifier = Modifier) {
+fun MessageBox(
+    modifier: Modifier = Modifier,
+    message: String,
+    author: String,
+    myMessage: Boolean = false
+) {
+    Row(
+        modifier = modifier.padding(5.dp),
+        horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.End
+    ) {
+        Surface(
+            color = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(10.dp),
+
+            ) {
+            Column(
+                modifier = Modifier.padding(
+                    top = 5.dp,
+                    bottom = 5.dp,
+                    start = 10.dp,
+                    end = 10.dp
+                ),
+            ) {
+                Text(
+                    "$author:",
+                    style = MaterialTheme.typography.caption
+                )
+                Text(message)
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatSendButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Surface(
         elevation = 4.dp,
         shape = CircleShape,
@@ -150,7 +193,7 @@ fun ChatSendButton(modifier: Modifier = Modifier) {
 
     ) {
         IconButton(
-            onClick = {},
+            onClick = { onClick() },
         ) {
             Icon(Icons.Default.Send, contentDescription = "Send")
         }
@@ -158,13 +201,14 @@ fun ChatSendButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ChatTextInput(modifier: Modifier = Modifier) {
-    var textState by remember { mutableStateOf("") }
+fun ChatTextInput(
+    modifier: Modifier = Modifier,
+    text: String,
+    onValueChange: (value: String) -> Unit
+) {
     BasicTextField(
-        value = textState,
-        onValueChange = {
-            textState = it
-        },
+        value = text,
+        onValueChange = onValueChange,
         modifier = modifier
             .height(40.dp)
             .background(
@@ -195,6 +239,7 @@ fun preview() {
             .background(Color.White)
     ) {
 
-        HomeLoaded(users = mutableListOf())
+        HomeLoaded(messages = mutableListOf(), "", {})
+        {}
     }
 }

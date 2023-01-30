@@ -17,7 +17,7 @@ object AuthRepository {
 
     val user = AuthService.currentUser
     val users = UsersService.getAll().map {
-        it.filter { current -> current?.id != user.value?.uid }
+        it.filter { current -> current?.id != user.value?.id }
     }
 
     suspend fun checkSession(): Boolean {

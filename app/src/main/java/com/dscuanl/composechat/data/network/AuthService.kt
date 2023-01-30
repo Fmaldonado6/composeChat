@@ -1,5 +1,6 @@
 package com.dscuanl.composechat.data.network
 
+import com.dscuanl.composechat.data.models.User
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthCredential
@@ -16,19 +17,27 @@ object AuthService {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
 
-    private val _currentUser: MutableStateFlow<FirebaseUser?> = MutableStateFlow(null)
+    private val _currentUser: MutableStateFlow<User?> = MutableStateFlow(null)
     val currentUser = _currentUser.asStateFlow()
 
     suspend fun checkSession(): Boolean {
         val user = firebaseAuth.currentUser
         if (user != null) {
-            _currentUser.emit(user)
+            _currentUser.emit(
+                User(
+                    id = user.uid,
+                    displayName = user.displayName,
+                    email = user.email,
+                    photoUrl = user.photoUrl.toString(),
+
+                    )
+            )
             return true
         }
         return false
     }
 
-    fun signOut(){
+    fun signOut() {
         firebaseAuth.signOut()
     }
 
@@ -37,7 +46,15 @@ object AuthService {
     }
 
     suspend fun setCurrentUser(user: FirebaseUser) {
-        _currentUser.emit(user)
+        _currentUser.emit(
+            User(
+                id = user.uid,
+                displayName = user.displayName,
+                email = user.email,
+                photoUrl = user.photoUrl.toString(),
+
+                )
+        )
     }
 
 
