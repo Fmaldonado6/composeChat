@@ -8,12 +8,17 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 object AuthRepository {
 
     val user = AuthService.currentUser
-    val users = UsersService.elements
+    val users = UsersService.getAll().map {
+        it.filter { current -> current?.id != user.value?.uid }
+    }
 
     suspend fun checkSession(): Boolean {
         return AuthService.checkSession()
@@ -28,7 +33,7 @@ object AuthRepository {
 
     private suspend fun registerUserIfDoesntExists(user: FirebaseUser) {
         val existingUser = UsersService.get(user.uid)
-        if(existingUser != null) return
+        if (existingUser != null) return
         UsersService.add(
             User(
                 id = user.uid,

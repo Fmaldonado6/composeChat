@@ -1,41 +1,165 @@
 package com.dscuanl.composechat.ui.screens.home
 
 import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.dscuanl.composechat.data.models.User
+import com.dscuanl.composechat.ui.theme.ComposeChatTheme
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @Composable
 fun HomeScreen(
     vm: HomeViewModel,
     navController: NavController
 ) {
-    val users by vm.users.collectAsState()
+    val users by vm.users.collectAsState(mutableListOf())
+    val state by vm.uiState.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Chat", style = TextStyle(fontSize = 35.sp))
+                },
+                modifier = Modifier.height(80.dp),
+                elevation = 0.dp,
+
+                backgroundColor = MaterialTheme.colors.background
+            )
+        }
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
         ) {
-            LazyColumn {
-                items(users) { user ->
-                    Log.d("Hola","USADASD")
+            when (state) {
+                is HomeUiState.Loaded -> HomeLoaded(users = users)
+                is HomeUiState.Loading -> HomeLoading()
+                is HomeUiState.Empty -> Text("No users")
+                is HomeUiState.Error -> Button(onClick = {
+                    vm.retry()
+                }) {
+                    Text("Reintentar")
+                }
+            }
+
+        }
+
+    }
+}
+
+@Composable
+fun HomeLoading() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+
+@Composable
+fun HomeLoaded(users: List<User?>) {
+    var textState by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn {
+            items(users) { user ->
+                Row(modifier = Modifier.padding(5.dp)) {
                     Text(user?.displayName ?: "Hola")
+                }
+            }
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Surface(
+            modifier = Modifier
+                .background(MaterialTheme.colors.background)
+                .fillMaxWidth(),
+            elevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BasicTextField(
+                    value = textState,
+                    onValueChange = {
+                        textState = it
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                        .background(
+                            Color(0xFFc7c7c7),
+                            RoundedCornerShape(20.dp),
+                        )
+                        .fillMaxWidth(),
+                    decorationBox = { textField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 15.dp, end = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically
+
+                        ) {
+                            textField()
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Surface(
+                    elevation = 4.dp,
+                    shape = CircleShape,
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier
+                        .width(45.dp)
+                        .height(45.dp)
+
+                ) {
+                    IconButton(
+                        onClick = {},
+
+                        ) {
+                        Icon(Icons.Default.Send, contentDescription = "Send")
+                    }
                 }
             }
         }
 
     }
+}
 
+@Preview
+@Composable
+fun preview() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+
+        HomeLoaded(users = mutableListOf())
+    }
 }

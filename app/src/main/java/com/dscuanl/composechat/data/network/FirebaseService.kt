@@ -10,18 +10,16 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
 import kotlin.reflect.KClass
 
-fun <T : Any> DatabaseReference.addValueEventListenerFlow(valueType: KClass<T>): Flow<T?> =
+fun DatabaseReference.addValueEventListenerFlow(): Flow<DataSnapshot> =
     callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                trySend(dataSnapshot.getValue(valueType.java))
+                trySend(dataSnapshot)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -29,6 +27,7 @@ fun <T : Any> DatabaseReference.addValueEventListenerFlow(valueType: KClass<T>):
             }
         }
         addValueEventListener(listener)
+
         awaitClose { removeEventListener(listener) }
     }
 
@@ -45,14 +44,24 @@ abstract class FirebaseService<T : FirebaseEntity>(
         ref.setValue(element)
     }
 
-    fun get(id: String): Flow<T?> {
+    suspend fun get(id: String): T? {
         val ref = database.getReference(dbName).child(id)
-        return ref.addValueEventListenerFlow(valueType)
+        return ref.get().await().getValue(valueType.java)
     }
 
-    fun getAll(): Flow<T?> {
+    fun getAsFlow(id: String): Flow<T?> {
+        val ref = database.getReference(dbName).child(id)
+        return ref.addValueEventListenerFlow().map { it.getValue(valueType.java) }
+    }
+
+    fun getAll(): Flow<List<T?>> {
         val ref = database.getReference(dbName)
-        return ref.addValueEventListenerFlow(valueType)
+        return ref.addValueEventListenerFlow().map {
+            return@map it.children.map { value ->
+                value.getValue(valueType.java)
+            }
+
+        }
     }
 
     fun delete(id: String) {
