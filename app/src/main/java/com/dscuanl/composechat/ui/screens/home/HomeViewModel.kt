@@ -17,19 +17,5 @@ class HomeViewModel : ViewModel() {
     private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    val users = AuthRepository.users
-        .retryWhen { cause, attempt ->
-            emit(mutableListOf())
-            true
-        }
-        .onEach {
-            if (it.isEmpty()) _uiState.emit(HomeUiState.Empty)
-            else _uiState.emit(HomeUiState.Loaded)
-        }
-        .catch { exception -> _uiState.emit(HomeUiState.Error) }
 
-
-    fun retry() {
-        users.retry()
-    }
 }

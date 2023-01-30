@@ -3,6 +3,7 @@ package com.dscuanl.composechat.data.network
 import com.beust.klaxon.Klaxon
 import com.beust.klaxon.token.Value
 import com.dscuanl.composechat.data.models.FirebaseEntity
+import com.dscuanl.composechat.data.models.Message
 import com.dscuanl.composechat.data.models.User
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
@@ -77,4 +78,6 @@ abstract class FirebaseService<T : FirebaseEntity>(
 }
 
 object UsersService : FirebaseService<User>("users", User::class)
+object MessageService : FirebaseService<Message>("messages", Message::class)
+
 

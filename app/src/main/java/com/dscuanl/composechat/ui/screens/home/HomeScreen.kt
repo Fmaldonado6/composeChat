@@ -29,7 +29,6 @@ fun HomeScreen(
     vm: HomeViewModel,
     navController: NavController
 ) {
-    val users by vm.users.collectAsState(mutableListOf())
     val state by vm.uiState.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -51,11 +50,10 @@ fun HomeScreen(
                 .padding(it)
         ) {
             when (state) {
-                is HomeUiState.Loaded -> HomeLoaded(users = users)
+                is HomeUiState.Loaded -> HomeLoaded(users = mutableListOf())
                 is HomeUiState.Loading -> HomeLoading()
                 is HomeUiState.Empty -> Text("No users")
                 is HomeUiState.Error -> Button(onClick = {
-                    vm.retry()
                 }) {
                     Text("Reintentar")
                 }
@@ -80,7 +78,6 @@ fun HomeLoading() {
 
 @Composable
 fun HomeLoaded(users: List<User?>) {
-    var textState by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -103,52 +100,61 @@ fun HomeLoaded(users: List<User?>) {
                 modifier = Modifier.padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BasicTextField(
-                    value = textState,
-                    onValueChange = {
-                        textState = it
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                        .background(
-                            Color(0xFFc7c7c7),
-                            RoundedCornerShape(20.dp),
-                        )
-                        .fillMaxWidth(),
-                    decorationBox = { textField ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(start = 15.dp, end = 15.dp),
-                            verticalAlignment = Alignment.CenterVertically
-
-                        ) {
-                            textField()
-                        }
-                    }
-                )
+                ChatTextInput(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(10.dp))
-                Surface(
-                    elevation = 4.dp,
-                    shape = CircleShape,
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier
-                        .width(45.dp)
-                        .height(45.dp)
-
-                ) {
-                    IconButton(
-                        onClick = {},
-
-                        ) {
-                        Icon(Icons.Default.Send, contentDescription = "Send")
-                    }
-                }
+                ChatSendButton()
             }
         }
 
     }
+}
+
+@Composable
+fun ChatSendButton(modifier: Modifier = Modifier) {
+    Surface(
+        elevation = 4.dp,
+        shape = CircleShape,
+        color = MaterialTheme.colors.primary,
+        modifier = Modifier
+            .width(45.dp)
+            .height(45.dp)
+
+    ) {
+        IconButton(
+            onClick = {},
+        ) {
+            Icon(Icons.Default.Send, contentDescription = "Send")
+        }
+    }
+}
+
+@Composable
+fun ChatTextInput(modifier: Modifier = Modifier) {
+    var textState by remember { mutableStateOf("") }
+    BasicTextField(
+        value = textState,
+        onValueChange = {
+            textState = it
+        },
+        modifier = modifier
+            .height(40.dp)
+            .background(
+                Color(0xFFc7c7c7),
+                RoundedCornerShape(20.dp),
+            )
+            .fillMaxWidth(),
+        decorationBox = { textField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 15.dp, end = 15.dp),
+                verticalAlignment = Alignment.CenterVertically
+
+            ) {
+                textField()
+            }
+        }
+    )
 }
 
 @Preview
