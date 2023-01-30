@@ -82,14 +82,43 @@ fun HomeLoaded(users: List<User?>) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyColumn {
+
+        LazyColumn(modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth(),
+            reverseLayout = true,
+
+        ) {
+
             items(users) { user ->
                 Row(modifier = Modifier.padding(5.dp)) {
                     Text(user?.displayName ?: "Hola")
                 }
             }
+
+            items(count = 20) {
+
+                Row(modifier = Modifier.padding(5.dp)) {
+                    Surface(
+                        color = MaterialTheme.colors.primary,
+                        shape = RoundedCornerShape(5.dp),
+
+                        ) {
+                        Column(
+                            modifier = Modifier.padding(5.dp),
+                        ) {
+                            Text(
+                                "Fernando Maldonado:",
+                                style = MaterialTheme.typography.caption
+                            )
+
+                            Text("asdasdasd $it")
+                        }
+                    }
+                }
+            }
+
         }
-        Spacer(modifier = Modifier.weight(1f))
         Surface(
             modifier = Modifier
                 .background(MaterialTheme.colors.background)

@@ -14,7 +14,7 @@ sealed interface HomeUiState {
 
 class HomeViewModel : ViewModel() {
 
-    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loading)
+    private val _uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loaded)
     val uiState = _uiState.asStateFlow()
 
 
