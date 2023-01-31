@@ -16,13 +16,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.dscuanl.composechat.data.models.Message
 import com.dscuanl.composechat.data.models.User
+import com.dscuanl.composechat.ui.navigation.Screens
 import com.dscuanl.composechat.ui.theme.ComposeChatTheme
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
@@ -33,16 +37,55 @@ fun HomeScreen(
 ) {
     val state by vm.uiState.collectAsState()
     val messages by vm.messages.collectAsState(initial = mutableListOf())
+    val user by vm.currentUser.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Chat", style = TextStyle(fontSize = 35.sp))
+                    Text("Chat", style = TextStyle(fontSize = 30.sp))
                 },
-                modifier = Modifier.height(80.dp),
-                elevation = 0.dp,
 
+                modifier = Modifier.height(70.dp),
+                elevation = 4.dp,
+                actions = {
+                    Box(
+                        modifier = Modifier.wrapContentSize(Alignment.TopStart)
+                    ) {
+
+                        IconButton(
+                            modifier = Modifier.padding(end = 10.dp),
+                            onClick = {
+                                vm.dropDownExpanded = true
+                            }
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context = LocalContext.current)
+                                        .data(user?.photoUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Foto de perfil"
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = vm.dropDownExpanded,
+                            onDismissRequest = { vm.dropDownExpanded = false }
+                        ) {
+
+                            DropdownMenuItem(onClick = {
+                                vm.signOut()
+                            }) {
+                                Text("Cerrar sesión")
+                            }
+                        }
+                    }
+                },
                 backgroundColor = MaterialTheme.colors.background
             )
         }
@@ -63,8 +106,16 @@ fun HomeScreen(
                         vm.sendMessage()
                     }
                 )
-                is HomeUiState.Loading -> HomeLoading()
                 is HomeUiState.Empty -> Text("No users")
+                is HomeUiState.Loading -> HomeLoading()
+                is HomeUiState.SignOut -> {
+                    LaunchedEffect(Unit) {
+                        navController.navigate(Screens.Login.route){
+                            popUpTo(Screens.Home.route){inclusive = true}
+                        }
+                    }
+                    HomeLoading()
+                }
                 is HomeUiState.Error -> Button(onClick = {
                 }) {
                     Text("Reintentar")
@@ -114,7 +165,8 @@ fun HomeLoaded(
                 MessageBox(
                     modifier = Modifier.fillMaxWidth(),
                     message = currentMessage?.message ?: "",
-                    author = currentMessage?.author ?: ""
+                    author = currentMessage?.author ?: "",
+                    myMessage = currentMessage?.myMessage ?: false
                 )
             }
 
@@ -239,7 +291,6 @@ fun preview() {
             .background(Color.White)
     ) {
 
-        HomeLoaded(messages = mutableListOf(), "", {})
-        {}
+
     }
 }

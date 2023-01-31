@@ -59,19 +59,21 @@ fun AuthScreen(
 
             when (uiState) {
                 AuthUiState.Initial -> AuthInitial {
-                    val gso =
-                        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(BuildConfig.GCP_KEY)
-                            .requestEmail()
-                            .build()
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(BuildConfig.GCP_KEY)
+                        .requestEmail()
+                        .build()
                     val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                    googleSignInClient.signOut()
                     launcher.launch(googleSignInClient.signInIntent)
                 }
                 AuthUiState.Loading -> AuthLoading()
                 AuthUiState.Error -> AuthError()
                 AuthUiState.Success -> {
                     LaunchedEffect(Unit) {
-                        navController.navigate(Screens.Home.route)
+                        navController.navigate(Screens.Home.route) {
+                            popUpTo(Screens.Login.route) { inclusive = true }
+                        }
                     }
                     AuthLoading()
                 }
@@ -133,6 +135,7 @@ fun AuthLoading() {
 
 @Composable
 fun AuthError() {
+    Text("Error")
 
 }
 

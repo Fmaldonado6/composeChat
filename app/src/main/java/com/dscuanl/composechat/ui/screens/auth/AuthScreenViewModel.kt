@@ -1,5 +1,6 @@
 package com.dscuanl.composechat.ui.screens.auth
 
+import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ class AuthScreenViewModel : ViewModel() {
                 AuthRepository.signInWithGoogle(credential)
                 _uiState.emit(AuthUiState.Success)
             } catch (e: java.lang.Exception) {
+                Log.e("Error","e",e)
                 _uiState.emit(AuthUiState.Error)
             }
         }
