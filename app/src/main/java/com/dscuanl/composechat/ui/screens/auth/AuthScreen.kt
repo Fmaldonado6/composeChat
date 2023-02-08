@@ -42,9 +42,7 @@ fun AuthScreen(
 
         }
     )
-
     val context = LocalContext.current
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -130,19 +128,20 @@ fun AuthInitial(onSignInClicked: () -> Unit) {
 
 @Composable
 fun AuthLoading() {
-
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
+    }
 }
 
 @Composable
 fun AuthError() {
     Text("Error")
-
 }
 
-@Composable
-fun AuthSuccess() {
-
-}
 
 
 @Composable

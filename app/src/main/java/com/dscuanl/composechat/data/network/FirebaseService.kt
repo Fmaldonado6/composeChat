@@ -31,29 +31,29 @@ fun DatabaseReference.addValueEventListenerFlow(): Flow<DataSnapshot> =
     }
 
 abstract class FirebaseService<T : FirebaseEntity>(
-    private val dbName: String,
-    private val valueType: KClass<T>,
+    protected val dbName: String,
+    protected val valueType: KClass<T>,
 ) {
-    private val database = Firebase.database
+    protected val database = Firebase.database
 
 
-    fun add(element: T) {
+    open fun add(element: T) {
         val ref = database.getReference(dbName).push()
         element.id = ref.key
         ref.setValue(element)
     }
 
-    suspend fun get(id: String): T? {
+    open suspend fun get(id: String): T? {
         val ref = database.getReference(dbName).child(id)
         return ref.get().await().getValue(valueType.java)
     }
 
-    fun getAsFlow(id: String): Flow<T?> {
+    open  fun getAsFlow(id: String): Flow<T?> {
         val ref = database.getReference(dbName).child(id)
         return ref.addValueEventListenerFlow().map { it.getValue(valueType.java) }
     }
 
-    fun getAll(): Flow<List<T?>> {
+    open fun getAll(): Flow<List<T?>> {
         val ref = database.getReference(dbName)
         return ref.addValueEventListenerFlow().map {
             return@map it.children.map { value ->
@@ -63,19 +63,24 @@ abstract class FirebaseService<T : FirebaseEntity>(
         }
     }
 
-    fun delete(id: String) {
+    open fun delete(id: String) {
         val ref = database.getReference(dbName).child(id)
         ref.removeValue()
     }
 
-    fun update(id: String, element: T) {
+    open fun update(id: String, element: T) {
         val ref = database.getReference(dbName).child(id)
         ref.setValue(element)
     }
 
 }
 
-object UsersService : FirebaseService<User>("users", User::class)
+object UsersService : FirebaseService<User>("users", User::class){
+    override fun add(element: User) {
+        val ref = database.getReference(dbName).child(element.id!!)
+        ref.setValue(element)
+    }
+}
 object MessageService : FirebaseService<Message>("messages", Message::class)
 
 

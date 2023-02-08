@@ -40,53 +40,14 @@ fun HomeScreen(
     val user by vm.currentUser.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Chat", style = TextStyle(fontSize = 30.sp))
-                },
-
-                modifier = Modifier.height(70.dp),
-                elevation = 4.dp,
-                actions = {
-                    Box(
-                        modifier = Modifier.wrapContentSize(Alignment.TopStart)
-                    ) {
-
-                        IconButton(
-                            modifier = Modifier.padding(end = 10.dp),
-                            onClick = {
-                                vm.dropDownExpanded = true
-                            }
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context = LocalContext.current)
-                                        .data(user?.photoUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = "Foto de perfil"
-                                )
-                            }
-                        }
-
-                        DropdownMenu(
-                            expanded = vm.dropDownExpanded,
-                            onDismissRequest = { vm.dropDownExpanded = false }
-                        ) {
-
-                            DropdownMenuItem(onClick = {
-                                vm.signOut()
-                            }) {
-                                Text("Cerrar sesión")
-                            }
-                        }
-                    }
-                },
-                backgroundColor = MaterialTheme.colors.background
+            HomeAppBar(
+                title = "Chat",
+                isDropdownExpanded = vm.dropDownExpanded,
+                userPhotoUrl = user?.photoUrl,
+                onIconClicked = { vm.dropDownExpanded = true },
+                onSignOutClicked = { vm.signOut() },
+                onDropDownDismissed = { vm.dropDownExpanded = false }
             )
         }
     ) {
@@ -110,8 +71,8 @@ fun HomeScreen(
                 is HomeUiState.Loading -> HomeLoading()
                 is HomeUiState.SignOut -> {
                     LaunchedEffect(Unit) {
-                        navController.navigate(Screens.Login.route){
-                            popUpTo(Screens.Home.route){inclusive = true}
+                        navController.navigate(Screens.Login.route) {
+                            popUpTo(Screens.Home.route) { inclusive = true }
                         }
                     }
                     HomeLoading()
@@ -128,7 +89,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeLoading() {
+fun HomeLoading(modifier: Modifier = Modifier) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -166,7 +127,8 @@ fun HomeLoaded(
                     modifier = Modifier.fillMaxWidth(),
                     message = currentMessage?.message ?: "",
                     author = currentMessage?.author ?: "",
-                    myMessage = currentMessage?.myMessage ?: false
+                    myMessage = currentMessage?.myMessage ?: false,
+                    authorPicture = currentMessage?.authorPicture
                 )
             }
 
@@ -196,19 +158,90 @@ fun HomeLoaded(
     }
 }
 
+
+@Composable
+fun HomeAppBar(
+    modifier: Modifier = Modifier,
+    title: String,
+    isDropdownExpanded: Boolean,
+    userPhotoUrl: String?,
+    onIconClicked: () -> Unit,
+    onSignOutClicked: () -> Unit,
+    onDropDownDismissed: () -> Unit,
+) {
+    TopAppBar(
+        title = {
+            Text(title, style = TextStyle(fontSize = 30.sp))
+        },
+        modifier = Modifier.height(70.dp),
+        elevation = 4.dp,
+        actions = {
+            Box(
+                modifier = Modifier.wrapContentSize(Alignment.TopStart)
+            ) {
+
+                IconButton(
+                    modifier = Modifier.padding(end = 10.dp),
+                    onClick = onIconClicked
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context = LocalContext.current)
+                                .data(userPhotoUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Foto de perfil"
+                        )
+                    }
+                }
+                DropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = onDropDownDismissed
+                ) {
+                    DropdownMenuItem(onClick = onSignOutClicked) {
+                        Text("Cerrar sesión")
+                    }
+                }
+            }
+        },
+        backgroundColor = MaterialTheme.colors.background
+    )
+}
+
 @Composable
 fun MessageBox(
     modifier: Modifier = Modifier,
     message: String,
     author: String,
+    authorPicture: String?,
     myMessage: Boolean = false
 ) {
     Row(
         modifier = modifier.padding(5.dp),
-        horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.End
+        horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        if (!myMessage)
+            Surface(
+                shape = CircleShape,
+                modifier = Modifier.padding(end = 10.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context = LocalContext.current)
+                        .data(authorPicture)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Foto de perfil"
+                )
+            }
         Surface(
-            color = MaterialTheme.colors.primary,
+            color =
+            if (myMessage)
+                MaterialTheme.colors.primary.copy(alpha = .5f)
+            else
+                MaterialTheme.colors.primary,
             shape = RoundedCornerShape(10.dp),
 
             ) {
@@ -227,6 +260,19 @@ fun MessageBox(
                 Text(message)
             }
         }
+        if (myMessage)
+            Surface(
+                shape = CircleShape,
+                modifier = Modifier.padding(start = 10.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context = LocalContext.current)
+                        .data(authorPicture)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Foto de perfil"
+                )
+            }
     }
 }
 
@@ -290,7 +336,5 @@ fun preview() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-
-
     }
 }

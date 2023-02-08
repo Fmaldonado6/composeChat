@@ -40,5 +40,4 @@ fun AppNavigation(
 enum class Screens(val route: String) {
     Login("login"),
     Home("home"),
-    Chat("chat/{chatId}")
 }

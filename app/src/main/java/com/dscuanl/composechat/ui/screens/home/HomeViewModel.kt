@@ -48,14 +48,12 @@ class HomeViewModel : ViewModel() {
         ChatRepository.sendMessage(message = newMessage)
     }
 
-
     fun signOut() {
         viewModelScope.launch(Dispatchers.IO) {
             AuthService.signOut()
             _uiState.emit(HomeUiState.SignOut)
         }
     }
-
 
     fun onMessageTyped(value: String) {
         messageState = value

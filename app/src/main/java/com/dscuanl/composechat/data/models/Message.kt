@@ -8,6 +8,6 @@ data class Message(
     val author: String? = "",
     val authorPicture: String? = "",
     val authorId: String? = "",
-    @Exclude
+    @get:Exclude
     var myMessage: Boolean = false
 ) : FirebaseEntity()

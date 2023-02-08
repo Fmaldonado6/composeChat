@@ -30,7 +30,6 @@ class AuthScreenViewModel : ViewModel() {
         checkSession()
     }
 
-
     private fun checkSession() {
         viewModelScope.launch(Dispatchers.IO) {
             if (AuthRepository.checkSession())
@@ -47,9 +46,15 @@ class AuthScreenViewModel : ViewModel() {
                 AuthRepository.signInWithGoogle(credential)
                 _uiState.emit(AuthUiState.Success)
             } catch (e: java.lang.Exception) {
-                Log.e("Error","e",e)
+                Log.e("Error", "e", e)
                 _uiState.emit(AuthUiState.Error)
             }
+        }
+    }
+
+    fun changeState(state: AuthUiState) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.emit(state)
         }
     }
 
